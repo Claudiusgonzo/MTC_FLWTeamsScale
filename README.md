@@ -11,12 +11,15 @@ Tool to bulk add Teams, Team Channels, assign users to Teams, assign Teams polic
 
 ### Configure the Local Environment
 
-Setting the local environment variables enables the scripts to run using relative paths.  The rootPath is the root of where you cloned this repository, and the tenantName is in the form yourTenant.onmicrosoft.com (no https://).
+Setting the local environment variables enables the scripts to run using relative paths.
+The rootPath is the root of where you cloned this repository.
+The tenantName is in the form yourTenant.onmicrosoft.com (no https://).
+The clientId is the Application ID of the "SMS Sign-in API" app.  This is created during the 
 
 1. Open a PowerShell session and navigate to the scripts folder inside the cloned git repo
-2. Run the script .\SetConfig.ps1 -tenantName [your tenant name] -rootPath "full path to the root of the git repo"
+2. Run the script .\SetConfig.ps1 -tenantName [your tenant name] -rootPath "full path to the root of the git repo" -clientId 00000000-0000-0000-0000-000000000000
 
-For example: .\SetConfig.ps1 -tenantName contoso.onmicrosoft.com -rootPath "C:\data\source\FLWTeamsScale"
+For example: .\SetConfig.ps1 -tenantName contoso.onmicrosoft.com -rootPath "C:\data\source\FLWTeamsScale" -clientId 00000000-0000-0000-0000-000000000000
 
 ### Setup Credentials
 
@@ -32,6 +35,7 @@ When you call Set-Creds, you are prompted to provide a XML file name that will b
 
 Examples:
 
+    Set-Creds ad-cred.xml
     Set-Creds msol-cred.xml
     Set-Creds azuread-cred.xml
     Set-Creds teams-cred.xml 
@@ -71,6 +75,18 @@ Assign the users to their assign Teams. Follow the instructions at [Assign Users
 ### Assign Policies to Users
 
 Assign the Teams policies to users. Follow the instructions at [Assign Policies to Users](./docs/AssignPoliciestoUsers.md)
+
+### Enable SMS Sign-in for Users
+
+Assign the Teams policies to users. Follow the instructions at [Assign Policies to Users](./docs/EnableSms.md)
+
+### Configure Azure AD Administrative Units (AU)
+
+Configure Azure AD AU account manager, and group menmbership. Follow the instructions at [Assign Policies to Users](./docs/ConfigureAdministrativeUnits.md)
+
+    NOTE
+
+    This is not yet compatable with dynamic group membership
 
 ### Convert Group Membership Type
 

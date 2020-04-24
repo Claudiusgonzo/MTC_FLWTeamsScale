@@ -1,7 +1,5 @@
 # Configure Administrative Units
 
-Configures Azure AD administrative units
-
 ## Steps
 
 1. Update the Teams CSV file [TeamsInformation](../data/teamsInformation.csv) with the Azure AD Administrative Units (AU) that will be created and the UPNs of each administrator for the AU

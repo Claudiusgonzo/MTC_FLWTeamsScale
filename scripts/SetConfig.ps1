@@ -12,14 +12,18 @@
 #>
 
 # Set local environment configuration
+param ([string]$rootPath,[string]$tenantName,[string]$clientId)
 Function Set-Config {
     [CmdletBinding()]
     param (
         [string]$rootPath,
-        [string]$tenantName
+        [string]$tenantName,
+        [string]$clientId
     )
     [System.Environment]::SetEnvironmentVariable('rootPath', $rootPath, [System.EnvironmentVariableTarget]::User)
     [System.Environment]::SetEnvironmentVariable('tenantName', $tenantName, [System.EnvironmentVariableTarget]::User)
+    [System.Environment]::SetEnvironmentVariable('clientId', $clientId, [System.EnvironmentVariableTarget]::User)
+
 }
 
-Set-Config -tenantName $tenantName -rootPath $rootPath
+Set-Config -tenantName $tenantName -rootPath $rootPath -clientId $clientId

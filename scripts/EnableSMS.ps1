@@ -10,57 +10,6 @@
     Please note: None of the conditions outlined in the disclaimer above will supercede the terms and conditions contained within
     the Premier Customer Services Description.
 #>
-<#
-    Usage:
-
-    NOTE: Dot source the script to load functions into the current session
-
-    . .scripts\EnableSMS.ps1
-
-    It will prompt you for login. (No VS Code Support, passing creds didn't work?)
-
-    Then you can call the following functions:
-    Get-UserSMSSignInSettings -userID <userID>
-    Set-UserSMSSignInNumber -phoneNumber <phoneNumber> -userID <userID>
-    Remove-SMSSignInNumber -userID <userID>
-    Enable-UserSMSSignIn -userID <userID>
-    Disable-UserSMSSignIn -userID <userID>
-    BulkSet-SMSSignInNumber -filePath "<path to file>"
-#>
-
-# Get environment variables
-$rootPath = [System.Environment]::GetEnvironmentVariable('rootPath', 'User')
-
-# Import the Bulk Add Functions module
-Import-Module "$rootPath\scripts\BulkAddFunctions.psm1"
-
-$cred = Get-Creds az-cred.xml
-
-$teamsConnection = Connect-MicrosoftTeams -Credential $cred
-
-$tenant = ""
-$clientId = ""
-$isPPE=$false
-
-# auth
-$authorityUri = if ($isPPE) { "https://login.windows-ppe.net/$tenant" } else { "https://login.microsoftonline.com/$tenant" }
-$scopes = if ($isPPE) { 'https://graph.microsoft-ppe.com/.default' } else { 'https://graph.microsoft.com/.default' }
-$redirectUri = "urn:ietf:wg:oauth:2.0:oob"
-
-$loginResponse = Get-MsalToken -clientID $clientID -tenantID $tenantDomain -RedirectUri $redirectUri -Authority $authorityUri -Scopes $scopes -Interactive
-$accessToken = $loginResponse.AccessToken
-$authHeaders = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
-$authHeaders.Add('Authorization', 'Bearer ' + $accessToken)
-$authHeaders.Add('Content-Type','application/json')
-$authHeaders.Add('Accept','application/json, text/plain')
-$baseUri = if ($isPPE) { 'https://graph.microsoft-ppe.com/beta/users/' } else { 'https://graph.microsoft.com/beta/users/' }
-$phoneAuthMethodUri = "$baseUri{0}/authentication/phoneMethods"
-$mobilePhoneMethodId = "3179e48a-750b-4051-897c-87b9720928f7"
-$updateMobilePhoneAuthMethodUri = $phoneAuthMethodUri + "/" + $mobilePhoneMethodId
-$enableSmsSignInUri = "$updateMobilePhoneAuthMethodUri/enableSmsSignin"
-$disableSmsSignInUri = "$updateMobilePhoneAuthMethodUri/disableSmsSignin"
-Add-Type -AssemblyName System.Web
-
 function Using-Object
 {
     [CmdletBinding()]
@@ -282,3 +231,60 @@ function BulkSet-SMSSignInNumber
         }
     }
 }
+
+Function Import-BulkAzureSMS {
+    param (
+        [Parameter(Mandatory)]
+        [String]
+        $usersCSVPath
+    )
+    if ($null -eq ($usersCSV = Read-CSV $usersCSVPath)) {
+        Write-Host "ERROR - Cannot Process Filename $usersCSVPath"
+        return
+    }
+    else {
+        foreach ($user in $usersCSV) {
+            try {
+                $upn = $user.Alias+"@"+$tenantName
+                Write-Host "Processing" $upn
+                Set-UserSMSSignInNumber -userID $upn -phoneNumber $User.MobileNumber
+            } catch {
+                $Error[0] | Format-List * -Force
+                #Write-Error $_.Exception
+            }
+        }
+    }
+}
+
+# Get environment variables
+$rootPath = [System.Environment]::GetEnvironmentVariable('rootPath', 'User')
+$tenantName = [System.Environment]::GetEnvironmentVariable('tenantName', 'User')
+$clientId = [System.Environment]::GetEnvironmentVariable('clientId', 'User')
+
+# Import the Bulk Add Functions module
+Import-Module "$rootPath\scripts\BulkAddFunctions.psm1"
+$cred = Get-Creds az-cred.xml
+$teamsConnection = Connect-MicrosoftTeams -Credential $cred
+$tenant = $teamsConnection.Tenantid
+$isPPE=$false
+
+# auth
+$authorityUri = if ($isPPE) { "https://login.windows-ppe.net/$tenant" } else { "https://login.microsoftonline.com/$tenant" }
+$scopes = if ($isPPE) { 'https://graph.microsoft-ppe.com/.default' } else { 'https://graph.microsoft.com/.default' }
+$redirectUri = "urn:ietf:wg:oauth:2.0:oob"
+
+$loginResponse = Get-MsalToken -clientID $clientID -tenantID $tenantDomain -RedirectUri $redirectUri -Authority $authorityUri -Scopes $scopes #-Interactive
+$accessToken = $loginResponse.AccessToken
+$authHeaders = New-Object 'System.Collections.Generic.Dictionary[[String],[String]]'
+$authHeaders.Add('Authorization', 'Bearer ' + $accessToken)
+$authHeaders.Add('Content-Type','application/json')
+$authHeaders.Add('Accept','application/json, text/plain')
+$baseUri = if ($isPPE) { 'https://graph.microsoft-ppe.com/beta/users/' } else { 'https://graph.microsoft.com/beta/users/' }
+$phoneAuthMethodUri = "$baseUri{0}/authentication/phoneMethods"
+$mobilePhoneMethodId = "3179e48a-750b-4051-897c-87b9720928f7"
+$updateMobilePhoneAuthMethodUri = $phoneAuthMethodUri + "/" + $mobilePhoneMethodId
+$enableSmsSignInUri = "$updateMobilePhoneAuthMethodUri/enableSmsSignin"
+$disableSmsSignInUri = "$updateMobilePhoneAuthMethodUri/disableSmsSignin"
+Add-Type -AssemblyName System.Web
+Import-BulkAzureSMS "$rootPath\data\users.csv"
+Write-Host "Completed Azure SMS Sign-in bulk add"

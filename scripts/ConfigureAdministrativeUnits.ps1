@@ -45,24 +45,24 @@ Function Import-BulkAzureADAUData {
                 $Error[0] | Format-List * -Force
             }
 
-
-            # $AzureADAU = $null; $AzureADAU = Get-AzureADAdministrativeUnit | Where-Object DisplayName -eq $team.LocationAU
-            # [System.Array]$LocationAdmins = $team.LocationAdmins.Split(";").Trim()
-            # ForEach ($admin in $LocationAdmins) {
-            #     $AdminUser = $null; $AdminUser = Get-AzureADUser | Where-Object UserPrincipalName -eq $admin
-            #     if ($AdminUser.Count -eq 1) {
-            #         $RoleMemberInfo = New-Object -TypeName Microsoft.Open.AzureAD.Model.RoleMemberInfo -Property @{ObjectId = $AdminUser.ObjectId }
-            #         Add-AzureADScopedRoleMembership -RoleObjectId $UserAccountAdministratorRole.ObjectId -ObjectId $AzureADAU.ObjectId -RoleMemberInfo $RoleMemberInfo
-            #     }
-            #     else {
-            #         $obj = New-Object PSObject
-            #         $obj | Add-Member Noteproperty -Name Exception -value "Messaging Policy Already Exists (skipping) - $policyName"
-            #         $obj | Add-Member Noteproperty -Name Message -value "Account Admin delegates $admin was found $($AdminUser.Count) times"
-            #         $obj | Add-Member Noteproperty -Name Cmdlet -value "ConfigureAdministrativeUnits.ps1 Import-BulkAzureADAUData"
-            #         LogException "$rootpath\logs\CreateTeamsMessagingPolicyExceptions.csv" $obj
-            #         throw "Account Admin delegates $admin was found $($AdminUser.Count) times"
-            #     }
-            # }
+            $AzureADAU = $null; $AzureADAU = Get-AzureADAdministrativeUnit | Where-Object DisplayName -eq $team.LocationAU
+            [System.Array]$LocationAdmins = $team.LocationAdmins.Split(";").Trim()
+            ForEach ($admin in $LocationAdmins) {
+                $upn = $admin+"@"+$tenantName
+                $AdminUser = $null; $AdminUser = Get-AzureADUser | Where-Object UserPrincipalName -eq $upn
+                if ($AdminUser.Count -eq 1) {
+                    $RoleMemberInfo = New-Object -TypeName Microsoft.Open.AzureAD.Model.RoleMemberInfo -Property @{ObjectId = $AdminUser.ObjectId }
+                    Add-AzureADScopedRoleMembership -RoleObjectId $UserAccountAdministratorRole.ObjectId -ObjectId $AzureADAU.ObjectId -RoleMemberInfo $RoleMemberInfo
+                }
+                else {
+                    $obj = New-Object PSObject
+                    $obj | Add-Member Noteproperty -Name Exception -value "Account Admin delegates error"
+                    $obj | Add-Member Noteproperty -Name Message -value "Account Admin delegates $admin was found $($AdminUser.Count) times"
+                    $obj | Add-Member Noteproperty -Name Cmdlet -value "ConfigureAdministrativeUnits.ps1 Import-BulkAzureADAUData"
+                    #LogException "$rootpath\logs\CreateTeamsMessagingPolicyExceptions.csv" $obj
+                    throw "Account Admin delegates $admin was found $($AdminUser.Count) times"
+                }
+            }
         }
     }
 }
