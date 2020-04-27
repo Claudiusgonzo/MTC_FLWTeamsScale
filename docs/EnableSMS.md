@@ -14,14 +14,14 @@ The Graph authorization model requires that an application must be consented by 
     2.  Select Public client for the Redirect URI and enter urn:ietf:wg:oauth:2.0:oob.
 5.	Click register.
 6.	When the application is registered, copy the Application (client) ID, and save the value for later – we will use it in the script.
-6.	Click on Settings, then click on Required permissions.
-7.	Click on Add a permission. Click on Microsoft Graph, Delegated Permissions. Select the following permissions:
+7.	Click on Settings, then click on Required permissions.
+8.	Click on Add a permission. Click on Microsoft Graph, Delegated Permissions. Select the following permissions:
     1.	Directory.AccessAsUser.All
     2.	Directory.ReadWrite.All
     3.  UserAuthenticationMethod.ReadWrite
     4.  UserAuthenticationMethod.ReadWrite.All
-8.	Click on Add a permission. Click on Azure Active Directory Graph, Delegated Permissions and select Directory.ReadWriteAll.  Click add permissions.
-9.	At the top of the API Permission page, click Grant admin consent for <your tenant name>, and select yes.
+9.	Click on Add a permission. Click on Azure Active Directory Graph, Delegated Permissions and select Directory.ReadWriteAll.  Click add permissions.
+10.	At the top of the API Permission page, click Grant admin consent for <your tenant name>, and select yes.
 
 
 ## Steps

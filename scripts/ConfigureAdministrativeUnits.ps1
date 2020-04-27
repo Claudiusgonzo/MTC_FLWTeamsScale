@@ -55,11 +55,7 @@ Function Import-BulkAzureADAUData {
                     Add-AzureADScopedRoleMembership -RoleObjectId $UserAccountAdministratorRole.ObjectId -ObjectId $AzureADAU.ObjectId -RoleMemberInfo $RoleMemberInfo
                 }
                 else {
-                    $obj = New-Object PSObject
-                    $obj | Add-Member Noteproperty -Name Exception -value "Account Admin delegates error"
-                    $obj | Add-Member Noteproperty -Name Message -value "Account Admin delegates $admin was found $($AdminUser.Count) times"
-                    $obj | Add-Member Noteproperty -Name Cmdlet -value "ConfigureAdministrativeUnits.ps1 Import-BulkAzureADAUData"
-                    #LogException "$rootpath\logs\CreateTeamsMessagingPolicyExceptions.csv" $obj
+                    Set-Exception -FileName "$rootPath\logs\ConfigureAdministrativeUnits.csv" -Module "ConfigureAdministrativeUnits" -Message "Account Admin delegates $admin was found $($AdminUser.Count) times"
                     throw "Account Admin delegates $admin was found $($AdminUser.Count) times"
                 }
             }

@@ -14,7 +14,7 @@ Tool to bulk add Teams, Team Channels, assign users to Teams, assign Teams polic
 Setting the local environment variables enables the scripts to run using relative paths.
 The rootPath is the root of where you cloned this repository.
 The tenantName is in the form yourTenant.onmicrosoft.com (no https://).
-The clientId is the Application ID of the "SMS Sign-in API" app.  This is created during the 
+The clientId is the Application ID of the "SMS Sign-in API" app.  Instructions on creating the app are dettails here [Enable Azure AD SMS Sign-in for Users](./docs/EnableSms.md)
 
 1. Open a PowerShell session and navigate to the scripts folder inside the cloned git repo
 2. Run the script .\SetConfig.ps1 -tenantName [your tenant name] -rootPath "full path to the root of the git repo" -clientId 00000000-0000-0000-0000-000000000000
@@ -76,9 +76,9 @@ Assign the users to their assign Teams. Follow the instructions at [Assign Users
 
 Assign the Teams policies to users. Follow the instructions at [Assign Policies to Users](./docs/AssignPoliciestoUsers.md)
 
-### Enable SMS Sign-in for Users
+### Enable Azure AD SMS Sign-in for Users
 
-Assign the Teams policies to users. Follow the instructions at [Assign Policies to Users](./docs/EnableSms.md)
+Enable Azure AD SMS Sign-in for Users. Follow the instructions at [Enable Azure AD SMS Sign-in for Users](./docs/EnableSms.md)
 
 ### Configure Azure AD Administrative Units (AU)
 

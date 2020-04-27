@@ -5,11 +5,17 @@
     a nonexclusive, royalty-free right to use and modify the Sample Code and to reproduce and distribute the object code form of
     the Sample Code, provided that You agree: (i) to not use Our name, logo, or trademarks to market Your software product in which
     the Sample Code is embedded; (ii) to include a valid copyright notice on Your software product in which the Sample Code is embedded;
-    and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and against any claims or lawsuits, including attorneys’
+    and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and against any claims or lawsuits, including attorneysâ€™
     fees, that arise or result from the use or distribution of the Sample Code.
     Please note: None of the conditions outlined in the disclaimer above will supercede the terms and conditions contained within
     the Premier Customer Services Description.
 #>
+
+<#
+    This script enables Azure AD SMS Sign-in
+#>
+
+# Create Azure AD Administrative Units
 function Using-Object
 {
     [CmdletBinding()]
@@ -109,6 +115,7 @@ function Get-UserSMSSignInSettings
     if ($jsonObj) {
         return $jsonObj.smsSignInState
     } else {
+        Set-Exception -FileName "$rootPath\logs\EnableSms.csv" -Module "EnableSMS" -Message "Get-UserMobilePhoneMethod failed to Get-UserMobilePhoneMethod for user $userID"
         return "notExists"
     }
 }
@@ -125,6 +132,7 @@ function Enable-UserSMSSignIn
         try {
             Invoke-WebRequest -UseBasicParsing -headers $authHeaders -Uri $uri -Method POST | Out-Null
         } catch {
+            Set-Exception -FileName "$rootPath\logs\EnableSms.csv" -Module "EnableSMS" -Message "Enable-UserSMSSignIn failed to Invoke-WebRequest -UseBasicParsing -headers $authHeaders -Uri $uri -Method POST"
             return HandleHttpErrorResponse($_.Exception.Response)
         }
     } else {
@@ -146,6 +154,7 @@ function Disable-UserSMSSignIn
         try {
             Invoke-WebRequest -UseBasicParsing -headers $authHeaders -Uri $uri -Method POST | Out-Null
         } catch {
+            Set-Exception -FileName "$rootPath\logs\EnableSms.csv" -Module "EnableSMS" -Message "Disable-UserSMSSignIn failed to Invoke-WebRequest -UseBasicParsing -Uri $uri"
             return HandleHttpErrorResponse($_.Exception.Response)
         }
     } else {
@@ -186,6 +195,7 @@ function Set-UserSMSSignInNumber
     $response = try {
         Invoke-WebRequest -UseBasicParsing -headers $authHeaders -Uri $uri -Method $method -Body $json
     } catch {
+        Set-Exception -FileName "$rootPath\logs\EnableSms.csv" -Module "EnableSMS" -Message "Set-UserSMSSignInNumber failed to Invoke-WebRequest -Uri $uri -Method $method -Body $json"
         return HandleHttpErrorResponse($_.Exception.Response)
     }
 
@@ -207,6 +217,7 @@ function Remove-SMSSignInNumber
         try {
             Invoke-WebRequest -UseBasicParsing -headers $authHeaders -Uri $uri -Method Delete | out-null
         } catch {
+            Set-Exception -FileName "$rootPath\logs\EnableSms.csv" -Module "EnableSMS" -Message "Remove-SMSSignInNumber failed to Invoke-WebRequest -UseBasicParsing -Uri $uri -Method Delete "
             return HandleHttpErrorResponse($_.Exception.Response)
         }
         Return "success"
@@ -215,23 +226,6 @@ function Remove-SMSSignInNumber
         return "notExists"
     }
 }
-function BulkSet-SMSSignInNumber
-{
-    [cmdletbinding()]
-    [Parameter(mandatory=$true)]
-    Param([System.IO.FileInfo]$filePath)
-    $CSV = Import-Csv $filePath -Header 'userID', 'phoneNumber'
-    for ($i = 0; $i -lt $CSV.Count; $i++) {
-        $User = $CSV[$i]
-        Write-Host "Processing user" $User.userID
-        try {
-            Set-UserSMSSignInNumber -userID $User.userID -phoneNumber $User.phoneNumber
-        } catch {
-            Write-Error $_.Exception
-        }
-    }
-}
-
 Function Import-BulkAzureSMS {
     param (
         [Parameter(Mandatory)]
@@ -247,10 +241,18 @@ Function Import-BulkAzureSMS {
             try {
                 $upn = $user.Alias+"@"+$tenantName
                 Write-Host "Processing" $upn
-                Set-UserSMSSignInNumber -userID $upn -phoneNumber $User.MobileNumber
+
+                # Can be used to diable AzureAD sms sign-in
+                # Disable-UserSMSSignIn -userID $upn
+
+                # Can be used to enable AzureAD sms sign-in
+                # Enable-UserSMSSignIn -userID $upn
+
+                # Remove-SMSSignInNumber -userID $upn
+                # Set-UserSMSSignInNumber -userID $upn -phoneNumber $User.MobileNumber
             } catch {
                 $Error[0] | Format-List * -Force
-                #Write-Error $_.Exception
+                Set-Exception -FileName "$rootPath\logs\EnableSms.csv" -Module "EnableSMS" -Message "Import-BulkAzureSMS failed to Set-UserSMSSignInNumber -userID $upn -phoneNumber $($User.MobileNumber)"
             }
         }
     }
